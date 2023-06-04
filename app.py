@@ -84,7 +84,7 @@ def get_books():
     con = sqlite3.connect("flask1db.db")
     cursor = con.cursor()
     kitap_data = []
-    cursor.execute("select kitap_adi, yazar, adres, path, kullanici, ucret, id from kitaplar where kullanici is not ?",(data['kullanici'],))
+    cursor.execute(f"select kitap_adi, yazar, adres, path, kullanici, ucret, id from kitaplar where kitap_adi like '%{data['keyword']}%' or yazar like '%{data['keyword']}%'")
     kitap_data = cursor.fetchall()
     
     try:
@@ -116,6 +116,39 @@ def get_book():
     finally:
         return response
 
+
+@app.route("/sendmessage", methods = ['POST'])
+def send_message():
+    data = request.get_json()
+    #password =request.get_json("password")
+    con = sqlite3.connect("flask1db.db")
+    cursor = con.cursor()
+    try:
+        
+        cursor.execute("insert into messages values(?,?,?)",(data["gonderen"], data["alan"],data["icerik"]))
+        con.commit()
+        response =  "mesaj gonderildi"
+    except:
+        response = "Mesaj Gonderilemiyor!"
+    finally:
+        return response
+    
+@app.route("/getmessages", methods = ['POST'])
+def get_messages():
+    data = request.get_json()
+    #password =request.get_json("password")
+    con = sqlite3.connect("flask1db.db")
+    cursor = con.cursor()
+    try:
+        
+        cursor.execute("select * from messages where (gonderen = ? and alan = ?) or (gonderen = ? and alan = ?)",(data["gonderen"], data["alan"],data["alan"],data["gonderen"]))
+        con.commit()
+        response =  cursor.fetchall()
+        print(response)
+    except:
+        response = "error"
+    finally:
+        return jsonify(response)
 
 
 
